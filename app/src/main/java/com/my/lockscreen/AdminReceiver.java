@@ -7,7 +7,7 @@ import android.util.Log;
 
 /**
  * 继承DeviceAdminReceiver的广播
- *
+ * <p>
  * Created by YJH on 2016/10/28 14:53.
  */
 public class AdminReceiver extends DeviceAdminReceiver {
@@ -15,6 +15,6 @@ public class AdminReceiver extends DeviceAdminReceiver {
     public void onReceive(Context context, Intent intent) {
         super.onReceive(context, intent);
 
-        Log.e("AdminReceiver","接收到广播~");
+        Log.e("AdminReceiver", "接收到广播~");
     }
 }

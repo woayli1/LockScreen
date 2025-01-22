@@ -1,15 +1,17 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 23
-    buildToolsVersion "24.0.0"
+
+    namespace 'com.my.lockscreen'
+    compileSdk 34
 
     defaultConfig {
         applicationId "com.my.lockscreen"
-        minSdkVersion 15
-        targetSdkVersion 23
+        minSdkVersion 24
+        targetSdkVersion 35
         versionCode 1
         versionName "1.0"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
         release {
@@ -20,7 +22,12 @@ android {
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
-    testCompile 'junit:junit:4.12'
-    compile 'com.android.support:appcompat-v7:23.4.0'
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    androidTestImplementation('com.google.android:android-test:4.1.1.4') {
+        exclude group: 'xpp3', module: 'xpp3'
+    }
+
+    testImplementation 'junit:junit:4.13.2'
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation platform('org.jetbrains.kotlin:kotlin-bom:1.8.0')
 }

@@ -5,19 +5,20 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
-import android.os.Build;
 import android.os.Bundle;
-import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.app.AppCompatActivity;
+
 /**
  * 一键锁屏小程序
- * 参考：https://my.oschina.net/lhjtianji/blog/115778
  * <p>
  * Created by YJH on 2016/10/28 13:38.
  */
@@ -26,6 +27,8 @@ public class MainActivity extends AppCompatActivity {
     private static final int MY_REQUEST_CODE = 9999;
     private DevicePolicyManager policyManager;
     private ComponentName componentName;
+
+    private ActivityResultLauncher<Intent> launcher;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,21 +41,21 @@ public class MainActivity extends AppCompatActivity {
         policyManager = (DevicePolicyManager) getSystemService(Context.DEVICE_POLICY_SERVICE);
         //AdminReceiver 继承自 DeviceAdminReceiver
         componentName = new ComponentName(this, AdminReceiver.class);
-        lockScreen();
-    }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == MY_REQUEST_CODE && resultCode == RESULT_OK) {
-            if (!policyManager.isAdminActive(componentName)) {   //若无权限
-                killSelf();
+        //该方法要放在onCreate里面，不能放在监听器里
+        launcher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+            if (result.getResultCode() == RESULT_OK) {
+                if (!policyManager.isAdminActive(componentName)) {   //若无权限
+                    killSelf();
+                } else {
+                    policyManager.lockNow();//直接锁屏
+                }
             } else {
-                policyManager.lockNow();//直接锁屏
+                killSelf();
             }
-        } else {
-            killSelf();
-        }
+        });
+
+        lockScreen();
     }
 
     /**
@@ -79,23 +82,22 @@ public class MainActivity extends AppCompatActivity {
         intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, componentName);
         //描述(additional explanation)
         intent.putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION, "激活后才可以使用锁屏功能 ^.^ ");
-        startActivityForResult(intent, MY_REQUEST_CODE);
+
+        launcher.launch(intent);
     }
 
     /**
      * 透明状态栏和底部导航栏
      */
     private void transParentStatusBarAndBottomNavigationBar() {
-        if (Build.VERSION.SDK_INT >= 21) {
-            View decorView = getWindow().getDecorView();  //获取到了当前界面的DecorView
-            //SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION，表示会让应用的主体内容占用系统导航栏的空间
-            int option = View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                    | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-                    | View.SYSTEM_UI_FLAG_LAYOUT_STABLE;
-            decorView.setSystemUiVisibility(option);
-            getWindow().setNavigationBarColor(Color.TRANSPARENT);
-            getWindow().setStatusBarColor(Color.TRANSPARENT);
-        }
+        View decorView = getWindow().getDecorView();  //获取到了当前界面的DecorView
+        //SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION，表示会让应用的主体内容占用系统导航栏的空间
+        int option = View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                | View.SYSTEM_UI_FLAG_LAYOUT_STABLE;
+        decorView.setSystemUiVisibility(option);
+        getWindow().setNavigationBarColor(Color.TRANSPARENT);
+        getWindow().setStatusBarColor(Color.TRANSPARENT);
         hideActionBar();
     }
 
@@ -132,6 +134,7 @@ public class MainActivity extends AppCompatActivity {
      */
     private void killSelf() {
         //killMyself ，锁屏之后就立即kill掉我们的Activity，避免资源的浪费;
-        android.os.Process.killProcess(android.os.Process.myPid());
+        finish();
+//        android.os.Process.killProcess(android.os.Process.myPid());
     }
 }
