@@ -3,7 +3,7 @@ apply plugin: 'com.android.application'
 android {
 
     namespace 'com.my.lockscreen'
-    compileSdk 34
+    compileSdk 35
 
     defaultConfig {
         applicationId "com.my.lockscreen"
