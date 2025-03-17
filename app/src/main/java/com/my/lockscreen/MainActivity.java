@@ -8,6 +8,8 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
@@ -50,6 +52,7 @@ public class MainActivity extends AppCompatActivity {
         if (!active) {   //若无权限
             activeManage();//去获得权限
         } else {
+            setAppScreenBrightness(10);
             policyManager.lockNow();//直接锁屏
             //killSelf ，锁屏之后就立即kill掉我们的Activity，避免资源的浪费;
             killSelf();
@@ -94,6 +97,27 @@ public class MainActivity extends AppCompatActivity {
             Log.e("hideActionBar", "ActionBar为空");
         }
     }
+
+//    /**
+//     * 1.获取系统默认屏幕亮度值 屏幕亮度值范围（0-255）
+//     **/
+//    private int getScreenBrightness(Context context) {
+//        ContentResolver contentResolver = context.getContentResolver();
+//        int defVal = 125;
+//        return Settings.System.getInt(contentResolver,
+//                Settings.System.SCREEN_BRIGHTNESS, defVal);
+//    }
+
+    /**
+     * 2.设置 APP界面屏幕亮度值方法
+     **/
+    private void setAppScreenBrightness(int birghtessValue) {
+        Window window = getWindow();
+        WindowManager.LayoutParams lp = window.getAttributes();
+        lp.screenBrightness = birghtessValue / 255.0f;
+        window.setAttributes(lp);
+    }
+
 
     /**
      * kill自己
